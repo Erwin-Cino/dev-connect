@@ -159,10 +159,14 @@ router.get("/user/:user_id", async (req, res) => {
 // @access  private
 // Get all profiles and profile by User ID
 
-router.delete("/", async (req, res) => {
+router.delete("/", auth, async (req, res) => {
   try {
-    const profiles = await Profile.find().populate("users", ["name", "avatar"]); //populate from the users collection
-    res.json(profiles);
+    // @todo - remove users posts
+    //remove profile
+    await Profile.findOneAndRemove({ user: req.user.id });
+    //remove user
+    await User.findOneAndRemove({ _id: req.user.id });
+    res.json({ msg: "User deleted" });
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Server Error");
