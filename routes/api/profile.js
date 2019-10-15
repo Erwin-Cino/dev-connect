@@ -11,7 +11,7 @@ const { check, validationResult } = require("express-validator");
 router.get("/me", auth, async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user.id }).populate(
-      "user",
+      "users",
       ["name", "avatar"]
     );
 
@@ -114,15 +114,59 @@ router.post(
   }
 );
 
-/* "company":"Potato Dev",
-	"status":"Developer",
-	"website":"https://erwincino.com",
-	"skills":"JS , Ruby, Loving",
-	"location":"Baguio",
-	"bio":"I am a good guy",
-	"githubusername":"Erwin-Cino",
-	"twitter": "twitter.com/erwin-cino",
-	"facebook": "twitter.com/erwin-cino",
-  "youtube": "twitter.com/erwin-cino" */
+// @route   GET api/profile
+// @desc    Get all profiles
+// @access  Public
+// Get all profiles and profile by User ID
+
+router.get("/", async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate("users", ["name", "avatar"]); //populate from the users collection
+    res.json(profiles);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route   GET api/profile/user/:user_id
+// @desc    Get profile by User ID
+// @access  Public
+// Get profile by ID
+
+router.get("/user/:user_id", async (req, res) => {
+  try {
+    const profile = await Profile.findOne({
+      user: req.params.user_id
+    }).populate("users", ["name", "avatar"]); //populate from the users collection
+    res.json(profile);
+
+    if (!profile) return res.status(400).json({ msg: "Profile Not Found" });
+
+    res.json(profile);
+  } catch (err) {
+    console.log(err.message);
+
+    if (err.kind == "ObjectId")
+      return res.status(400).json({ msg: "Profile Not Found" });
+
+    res.status(500).send("Server Error");
+  }
+});
+
+// @route   DELETE api/profile
+// @desc    DELETE A profile,user & posts
+// @access  private
+// Get all profiles and profile by User ID
+
+router.delete("/", async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate("users", ["name", "avatar"]); //populate from the users collection
+    res.json(profiles);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Server Error");
+  }
+});
 
 module.exports = router;
