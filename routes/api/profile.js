@@ -234,4 +234,88 @@ router.put(
   }
 );
 
+// @route   UPDATE api/profile/experience
+// @desc    Being able to update user experience in profile
+// @access  Private
+
+router.post(
+  "/experience",
+  [
+    auth,
+    [
+      check("title", "Title is required")
+        .not()
+        .isEmpty(),
+      check("company", "Company is required")
+        .not()
+        .isEmpty(),
+      check("from", "From date is required")
+        .not()
+        .isEmpty()
+    ]
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      title,
+      company,
+      location,
+      from,
+      to,
+      current,
+      description,
+      id
+    } = req.body;
+
+    const profileExperience = {};
+    if (title) profileExperience.title = title;
+    if (company) profileExperience.company = company;
+    if (location) profileExperience.location = location;
+    if (from) profileExperience.from = from;
+    if (to) profileExperience.to = to;
+    if (current) profileExperience.current = current;
+    if (description) profileExperience.description = description;
+
+    //console.log(profileExperience);
+
+    try {
+      let profileExp = await Profile.findOne({
+        user: req.user.id
+      });
+
+      let searchId = await Profile.findOne({
+        profileExp: { experience: { id: req.body.id } }
+      });
+
+      //console.log(profileExp);
+      console.log(profileExp);
+
+      //experience: { id: id } null
+      //experience: { $elemMatch: { id: req.body.id } } null
+      //{ user: req.user.id }
+
+      //console.log({ searchId });
+
+      if (profileExp) {
+        // Update Profile
+        profileExp = await Profile.findOneAndUpdate(
+          //{ profileExp: { experience: { id: req.body.id } } },
+          { user: req.user.id },
+          { $set: profileExperience },
+          { new: true }
+        );
+
+        return res.json(profileExp);
+      }
+    } catch (err) {
+      console.log(err.message);
+      res.status(500).send("Server Error");
+    }
+  }
+);
+
 module.exports = router;
