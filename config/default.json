@@ -1,4 +1,6 @@
 {
   "mongoURI": "mongodb+srv://patatas:patatas@devconnectdb-vav9t.gcp.mongodb.net/test?retryWrites=true&w=majority",
-  "jwtSecret": "secretToken"
+  "jwtSecret": "secretToken",
+  "githubClientId": "3f3f4498d978c127c0f7",
+  "githubSecret": "9d119210ad0f8e465466b245790657dca4ed503b"
 }
