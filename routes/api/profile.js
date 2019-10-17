@@ -282,38 +282,41 @@ router.post(
     if (current) profileExperience.current = current;
     if (description) profileExperience.description = description;
 
-    //console.log(profileExperience);
+    console.log(profileExperience.title);
 
     try {
-      let profileExp = await Profile.findOne({
+      let profileExp = await Profile.findOne(
         //experience: { company: "Test title." }
+        //experience.id
+
+        { user: req.user.id }
+      );
+
+      let searchExp = await Profile.findOne({
         user: req.user.id
       });
 
-      console.log(profileExp);
+      console.log(searchExp);
 
-      if (profileExp) {
+      if (searchExp) {
         // Update Profile
-        profileExp = await Profile.findOneAndUpdate(
-          { experience: { "experience._id": req.body.id } },
+        searchExp = await Profile.findOneAndUpdate(
+          { "experience._id": req.body.id },
           //{ experience: { id: req.body.id } },
           {
             $set: {
-              experience: {
-                title: profileExperience.title,
-                company: profileExperience.title,
-                location: profileExperience.location,
-                from: profileExperience.from,
-                to: profileExperience.to,
-                current: profileExperience.current,
-                description: profileExperience.description
-              }
+              "experience.$.title": profileExperience.title,
+              "experience.$.company": profileExperience.company,
+              "experience.$.location": profileExperience.location,
+              "experience.$.to": profileExperience.to,
+              "experience.$.current": profileExperience.current,
+              "experience.$.description": profileExperience.description
             }
           },
           { new: true }
         );
 
-        return res.json(profileExp);
+        return res.json(searchExp);
       }
     } catch (err) {
       console.log(err.message);
