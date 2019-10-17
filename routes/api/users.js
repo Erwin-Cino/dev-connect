@@ -6,6 +6,7 @@ const { check, validationResult } = require("express-validator"); //email and pa
 const User = require("../../models/Users");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+const auth = require("../../middleware/auth");
 
 // @route   POST api/users
 // @desc    Register route
@@ -32,7 +33,7 @@ router.post(
 
     try {
       //See if user exists
-      let user = await User.findOne({ email });
+      let user = await User.findById({ email });
 
       if (user) {
         res.status(400).json({ errors: [{ msg: "User already exists" }] });
@@ -77,6 +78,51 @@ router.post(
     } catch (err) {
       console.error(err.message);
       res.status(500).send("Server error");
+    }
+  }
+);
+
+// @route   POST api/users/name
+// @desc    Create or update user name
+// @access  Private
+
+router.post(
+  "/name",
+  [
+    auth,
+    [
+      check("name", "Name is required")
+        .not()
+        .isEmpty()
+    ]
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name } = req.body;
+    const userName = {};
+    if (name) userName.name = name;
+
+    try {
+      let user = await User.findById(req.user.id).select("-password");
+      console.log(user);
+
+      if (user) {
+        // Update Profile
+        user = await User.findOneAndUpdate(
+          { email: user.email },
+          { $set: userName },
+          { new: true }
+        );
+
+        return res.json(user);
+      }
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send("Server Error");
     }
   }
 );
